@@ -27,6 +27,13 @@
   const API_URL = 'http://localhost:5014/api/cars';
   const carList = document.getElementById('car-list');
 
+
+  const fetchCars = async () => {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error(`Fetch failed: ${response.status} ${response.statusText}`);
+    const cars = await response.json();
+    renderCars(cars);
+  }
   const renderCars = (cars) => {
     carList.innerHTML = "";
     cars.forEach(car => {
@@ -37,9 +44,7 @@
     });
   };
 
-  renderCars([
-    {id: 1, brand: 'Ford', model: 'Mustang', year: 1964, color: 'Red'},
-  ]);
+  fetchCars();
 </script>
 </body>
 </html>
