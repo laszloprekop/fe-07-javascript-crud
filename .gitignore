@@ -31,6 +31,13 @@ project.lock.json
 appsettings.*.local.json
 *.DotSettings.user
 
+# ---- SQLite ----
+# cars.db is created and seeded from Program.cs on first run, so it is build
+# output, not source. -shm and -wal are the write-ahead log alongside it.
+*.db
+*.db-shm
+*.db-wal
+
 # ---- Node / React / Tailwind frontend ----
 node_modules/
 dist/
