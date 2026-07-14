@@ -23,6 +23,23 @@
 <hr>
 <div id="car-list"></div>
 
-<script>/* code here */</script>
+<script>
+  const API_URL = 'http://localhost:5014/api/cars';
+  const carList = document.getElementById('car-list');
+
+  const renderCars = (cars) => {
+    carList.innerHTML = "";
+    cars.forEach(car => {
+      const card = document.createElement('div');
+      card.classList.add('car-card');
+      card.innerHTML = `<strong>${car.brand} ${car.model}</strong> (${car.year}) • ${car.color}`;
+      carList.appendChild(card);
+    });
+  };
+
+  renderCars([
+    {id: 1, brand: 'Ford', model: 'Mustang', year: 1964, color: 'Red'},
+  ]);
+</script>
 </body>
 </html>
