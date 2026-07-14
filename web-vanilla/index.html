@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+          content="Roger's Retro Cars — a small classic car collection you can browse, add to, edit and delete.">
+    <title>Roger's Retro Cars</title>
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>🚗</text></svg>">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        /* Pico v1's primary (#1095c1) is only 3.44:1 against the white text it puts on
+           top of it — under WCAG AA's 4.5:1. Pico's own blue-550 clears it at 5.23:1.
+           All three of Pico's themes declare the same primary, so all three need it.
+           The selectors mirror Pico's exactly: a plain :root loses to :root:not(...). */
+        :root:not([data-theme=dark]),
+        [data-theme=light],
+        [data-theme=dark] {
+            --primary: #0172ad;
+            --primary-hover: #01669b;
+            --primary-focus: rgba(1, 114, 173, 0.25);
+        }
+
+        /* Pico sizes <article> for prose: 80px of vertical margin, far too airy for a
+           list row. Set margin wholesale — overriding only margin-bottom leaves Pico's
+           margin-top standing, and neighbouring margins collapse to the larger of the
+           two, so the big one wins anyway. */
+        #car-list article {
+            padding: 0.75rem 1rem;
+            margin: 0 0 0.75rem;
+        }
+
+        .car-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .car-actions button {
+            width: auto;
+            margin-bottom: 0;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        /* Phones keep the buttons under the details; from Pico's sm breakpoint up
+           there is room to sit them on the same line. Pico's own .grid is no help
+           here — it stays stacked until 992px. */
+        @media (min-width: 576px) {
+            #car-list article {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .car-actions {
+                margin-top: 0;
+                flex-shrink: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+    <h1>Roger's Retro Cars</h1>
+
+    <form id="car-form" aria-label="Add or edit a car">
+        <div class="grid">
+            <label for="brand">Brand
+                <input type="text" id="brand" name="brand" placeholder="Volvo" required>
+            </label>
+            <label for="model">Model
+                <input type="text" id="model" name="model" placeholder="240" required>
+            </label>
+        </div>
+        <div class="grid">
+            <label for="year">Year
+                <input type="number" id="year" name="year" placeholder="1988" required>
+            </label>
+            <label for="color">Color
+                <input type="text" id="color" name="color" placeholder="Red" required>
+            </label>
+        </div>
+        <button type="submit" id="submit-btn">Save Car</button>
+    </form>
+
+    <h2>The collection</h2>
+    <div id="car-list" aria-live="polite"></div>
+</main>
+
+<script>
+  const API_URL = 'http://localhost:5014/api/cars';
+  const carList = document.getElementById('car-list');
+
+
+  const fetchCars = async () => {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error(`Fetch failed: ${response.status} ${response.statusText}`);
+    const cars = await response.json();
+    renderCars(cars);
+  }
+
+  const deleteCar = async (id) => {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      await fetchCars();
+    } else {
+      alert('Failed to delete car');
+    }
+  }
+
+
+  const renderCars = (cars) => {
+    carList.innerHTML = "";
+
+    if (cars.length === 0) {
+      carList.innerHTML = "<p>There are no cars in the database yet.</p>";
+      return;
+    }
+
+    cars.forEach(car => {
+      const card = document.createElement('article');
+      // JSON is full of double quotes, which would close the attribute early.
+      // Escaping them to &quot; keeps the whole object inside one attribute.
+      const carData = JSON.stringify(car).replace(/"/g, '&quot;');
+      card.innerHTML = `
+        <div>
+          <strong>${car.brand}, ${car.model}</strong> <span>(${car.year})</span> <span>${car.color}</span>
+        </div>
+        <div class="car-actions">
+          <button onclick="prepareEdit(${carData})"
+                  aria-label="Edit ${car.brand} ${car.model}">Edit</button>
+          <button class="secondary" onclick="deleteCar(${car.id})"
+                  aria-label="Delete ${car.brand} ${car.model}">Delete</button>
+        </div>`;
+      carList.appendChild(card);
+    });
+  };
+
+  let currentEditingId = null;
+
+  const prepareEdit = (car) => {
+    currentEditingId = car.id;
+    document.getElementById('brand').value = car.brand;
+    document.getElementById('model').value = car.model;
+    document.getElementById('year').value = car.year;
+    document.getElementById('color').value = car.color;
+    document.getElementById('submit-btn').textContent = "Update Car";
+    document.getElementById('brand').focus();
+  }
+
+  fetchCars();
+
+  // Create handler
+  const carForm = document.getElementById('car-form');
+
+  carForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const newCar = {
+      brand: document.getElementById('brand').value,
+      model: document.getElementById('model').value,
+      year: document.getElementById('year').value,
+      color: document.getElementById('color').value
+    }
+
+    let response;
+    if (currentEditingId === null) {
+      response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newCar)
+      });
+    } else {
+      response = await fetch(`${API_URL}/${currentEditingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({...newCar, id: currentEditingId})
+      })
+    }
+
+    if (response.ok) {
+      carForm.reset();
+      document.getElementById('submit-btn').textContent = "Save Car";
+      currentEditingId = null;
+
+      await fetchCars();
+    } else {
+      alert('Failed to save car');
+    }
+  })
+</script>
+</body>
+</html>
