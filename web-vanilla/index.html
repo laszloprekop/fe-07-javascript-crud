@@ -34,12 +34,26 @@
     const cars = await response.json();
     renderCars(cars);
   }
+
+  const deleteCar = async (id) => {
+    console.log("Deleting: " + id);
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      await fetchCars();
+    } else {
+      alert('Failed to delete car');
+    }
+  }
+
   const renderCars = (cars) => {
     carList.innerHTML = "";
     cars.forEach(car => {
       const card = document.createElement('div');
-      card.classList.add('car-card');
-      card.innerHTML = `<strong>${car.brand} ${car.model}</strong> (${car.year}) • ${car.color}`;
+      card.classList.add('grid', 'gap-y-1');
+      card.innerHTML = `<strong>${car.brand}, ${car.model}</strong><span>(${car.year})</span> <span>${car.color}</span>
+        <button onclick="deleteCar(${car.id})">Delete</button>`;
       carList.appendChild(card);
     });
   };
