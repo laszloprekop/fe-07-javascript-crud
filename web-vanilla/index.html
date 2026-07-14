@@ -36,7 +36,6 @@
   }
 
   const deleteCar = async (id) => {
-    console.log("Deleting: " + id);
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
     });
@@ -47,16 +46,30 @@
     }
   }
 
+
+
   const renderCars = (cars) => {
     carList.innerHTML = "";
     cars.forEach(car => {
       const card = document.createElement('div');
       card.classList.add('grid', 'gap-y-1');
       card.innerHTML = `<strong>${car.brand}, ${car.model}</strong><span>(${car.year})</span> <span>${car.color}</span>
+        <button onclick='prepareEdit(${JSON.stringify(car)})'>Edit</button>
         <button onclick="deleteCar(${car.id})">Delete</button>`;
       carList.appendChild(card);
     });
   };
+
+  let currentEditingId = null;
+
+  const prepareEdit = (car) => {
+    currentEditingId = car.id;
+    document.getElementById('brand').value = car.brand;
+    document.getElementById('model').value = car.model;
+    document.getElementById('year').value = car.year;
+    document.getElementById('color').value = car.color;
+    document.getElementById('submit-btn').textContent = "Update Car";
+  }
 
   fetchCars();
 
