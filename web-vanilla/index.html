@@ -45,6 +45,13 @@
   };
 
   fetchCars();
+
+  // Create handler
+  const carForm = document.getElementById('car-form');
+  carForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    console.log('🚩 Submitting form fired');
+  })
 </script>
 </body>
 </html>
