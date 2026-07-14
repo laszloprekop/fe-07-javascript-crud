@@ -47,7 +47,6 @@
   }
 
 
-
   const renderCars = (cars) => {
     carList.innerHTML = "";
     cars.forEach(car => {
@@ -75,6 +74,7 @@
 
   // Create handler
   const carForm = document.getElementById('car-form');
+
   carForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const newCar = {
@@ -84,15 +84,30 @@
       color: document.getElementById('color').value
     }
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newCar)
-    });
+    let response;
+    if (currentEditingId === null) {
+      response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newCar)
+      });
+    } else {
+      response = await fetch(`${API_URL}/${currentEditingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({...newCar, id: currentEditingId})
+      })
+    }
+
     if (response.ok) {
       carForm.reset();
+      document.getElementById('submit-btn').textContent = "Save Car";
+      currentEditingId = null;
+
       await fetchCars();
     } else {
       alert('Failed to save car');
