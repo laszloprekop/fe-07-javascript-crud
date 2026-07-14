@@ -2,8 +2,12 @@
 .DS_Store
 .AppleDouble
 .LSOverride
-Icon
-Icon?
+# Google Drive keeps creating custom folder-icon files. The real filename is
+# Icon + a carriage return, so a plain `Icon` line will NOT match it.
+# [[:cntrl:]] matches that trailing CR without the invisible-whitespace
+# fragility of the `Icon<CR><CR>` trick, and unlike `Icon?` it will not
+# swallow a real Icons/ folder. No slash => matches at any depth, forever.
+Icon[[:cntrl:]]
 ._*
 Thumbs.db
 Desktop.ini
@@ -43,3 +47,6 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+# ---- Planning docs, ignored for now ----
+Docs/untracked/
