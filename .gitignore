@@ -1,0 +1,45 @@
+# ---- OS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+Icon?
+._*
+Thumbs.db
+Desktop.ini
+
+# ---- IDE / Editors ----
+.idea/
+.vs/
+.vscode/
+*.swp
+*.user
+*.suo
+
+# ---- .NET / C# backend ----
+bin/
+obj/
+out/
+*.dll
+*.pdb
+*.cache
+project.lock.json
+appsettings.*.local.json
+*.DotSettings.user
+
+# ---- Node / React / Tailwind frontend ----
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Env / secrets ----
+.env
+.env.*
+!.env.example
