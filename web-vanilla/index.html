@@ -50,7 +50,26 @@
   const carForm = document.getElementById('car-form');
   carForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    console.log('🚩 Submitting form fired');
+    const newCar = {
+      brand: document.getElementById('brand').value,
+      model: document.getElementById('model').value,
+      year: document.getElementById('year').value,
+      color: document.getElementById('color').value
+    }
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newCar)
+    });
+    if (response.ok) {
+      carForm.reset();
+      await fetchCars();
+    } else {
+      alert('Failed to save car');
+    }
   })
 </script>
 </body>
